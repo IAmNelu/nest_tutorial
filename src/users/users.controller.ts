@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { NotFoundError } from 'rxjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -17,9 +18,14 @@ export class UsersController {
     return this.usersService.findAll(name);
   }
   @ApiOkResponse({ type: User, isArray: false, description: "The user" })
+  @ApiNotFoundResponse()
   @Get(":id")
   getUserByID(@Param("id") id: string): User {
-    return this.usersService.findById(Number(id));
+    const user = this.usersService.findById(Number(id));
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
 
